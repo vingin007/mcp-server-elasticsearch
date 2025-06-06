@@ -18,6 +18,13 @@ import {
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import fs from "fs";
 
+// Product metadata, used to generate the request User-Agent header and 
+// passed to the McpServer constructor.
+const product = {
+  name: "elasticsearch-mcp",
+  version: "0.1.1",
+};
+
 // Prepend a path prefix to every request path
 class CustomTransport extends Transport {
   private readonly pathPrefix: string;
@@ -108,6 +115,9 @@ export async function createElasticsearchMcpServer(
 
   const clientOptions: ClientOptions = {
     node: url,
+    headers: {
+      "user-agent": `${product.name}/${product.version}`,
+    },
   };
 
   if (pathPrefix) {
@@ -142,10 +152,7 @@ export async function createElasticsearchMcpServer(
 
   const esClient = new Client(clientOptions);
 
-  const server = new McpServer({
-    name: "elasticsearch-mcp-server",
-    version: "0.1.1",
-  });
+  const server = new McpServer(product);
 
   // Tool 1: List indices
   server.tool(
