@@ -86,8 +86,14 @@ const ConfigSchema = z
     version: z
       .string()
       .optional()
-      .transform((val) => (['8', '9'].includes(val ?? '') ? val : '9'))
-      .describe('Elasticsearch version (8, or 9)')
+      .transform((val) => (['8', '9'].includes(val || '') ? val : '9'))
+      .describe('Elasticsearch version (8, or 9)'),
+
+    sslSkipVerify: z
+      .boolean()
+      .optional()
+      .describe('Skip SSL certificate verification'),
+
   })
   .refine(
     (data) => {
@@ -113,8 +119,7 @@ type ElasticsearchConfig = z.infer<typeof ConfigSchema>
 
 export async function createElasticsearchMcpServer (config: ElasticsearchConfig): Promise<McpServer> {
   const validatedConfig = ConfigSchema.parse(config)
-  const { url, apiKey, username, password, caCert, version, pathPrefix } =
-    validatedConfig
+  const { url, apiKey, username, password, caCert, version, pathPrefix, sslSkipVerify } = validatedConfig
 
   const clientOptions: ClientOptions = {
     node: url,
@@ -140,10 +145,11 @@ export async function createElasticsearchMcpServer (config: ElasticsearchConfig)
   }
 
   // Set up SSL/TLS certificate if provided
+  clientOptions.tls = {}
   if (caCert != null) {
     try {
       const ca = fs.readFileSync(caCert)
-      clientOptions.tls = { ca }
+      clientOptions.tls.ca = ca
     } catch (error) {
       console.error(
         `Failed to read certificate file: ${
@@ -161,6 +167,11 @@ export async function createElasticsearchMcpServer (config: ElasticsearchConfig)
       accept: 'application/vnd.elasticsearch+json;compatible-with=8',
       'content-type': 'application/vnd.elasticsearch+json;compatible-with=8'
     }
+  }
+
+  // Skip verification if requested
+  if (sslSkipVerify != null && sslSkipVerify === true) {
+    clientOptions.tls.rejectUnauthorized = false
   }
 
   const esClient = new Client(clientOptions)
@@ -486,6 +497,7 @@ const config: ElasticsearchConfig = {
   password: process.env.ES_PASSWORD ?? '',
   caCert: process.env.ES_CA_CERT ?? '',
   version: process.env.ES_VERSION ?? '',
+  sslSkipVerify: process.env.ES_SSL_SKIP_VERIFY === '1' || process.env.ES_SSL_SKIP_VERIFY === 'true',
   pathPrefix: process.env.ES_PATH_PREFIX ?? ''
 }
 
