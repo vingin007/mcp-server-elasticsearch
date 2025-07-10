@@ -22,14 +22,17 @@ jobs:
         os:
           - name: linux
             runner: ubuntu-latest
+            ext: ""
           - name: windows
             runner: windows-latest
+            ext: ".exe"
           - name: macos
             runner: macos-latest
+            ext: ""
     steps:
       - name: Install missing OS dependencies for Linux
-        if: ${{ matrix.os.name == 'linux' }}
-        run: sudo apt update && sudo apt install libssl-dev
+        if: ${{ matrix.os.name == 'linux' && matrix.arch == 'arm64' }}
+        run: sudo apt update && sudo apt install -y gcc-aarch64-linux-gnu
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
@@ -63,6 +66,6 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           tag: ${{ inputs.version }}
-          file: checkout-tag/target/${{ steps.rust-target.outputs.target }}/release/elasticsearch-core-mcp-server
-          asset_name: elasticsearch-core-mcp-server.${{ inputs.version }}.${{ matrix.os.name }})-${{ matrix.arch }}
+          file: checkout-tag/target/${{ steps.rust-target.outputs.target }}/release/elasticsearch-core-mcp-server${{ matrix.os.ext }}
+          asset_name: elasticsearch-core-mcp-server.${{ inputs.version }}.${{ matrix.os.name }})-${{ matrix.arch }}${{ matrix.os.ext }}
           overwrite: true
