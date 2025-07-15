@@ -1,10 +1,5 @@
-.buildkite
-.github
-.nvmrc
-dist
+npm-package
 docs
-renovate.json
-scripts
-node_modules
-catalog-info.yaml
-yarn.lock
+target
+.idea
+.vscode

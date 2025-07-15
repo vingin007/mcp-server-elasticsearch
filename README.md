@@ -1,242 +1,134 @@
 # Elasticsearch MCP Server
 
-This repository contains experimental features intended for research and evaluation and are not production-ready.
+> [!CAUTION]
+> 
+> **WARNING: this is MCP server is EXPERIMENTAL.**
 
-Connect to your Elasticsearch data directly from any MCP Client (like Claude Desktop) using the Model Context Protocol (MCP).
+Connect to your Elasticsearch data directly from any MCP Client using the Model Context Protocol (MCP).
 
 This server connects agents to your Elasticsearch data using the Model Context Protocol. It allows you to interact with your Elasticsearch indices through natural language conversations.
-
-<a href="https://glama.ai/mcp/servers/@elastic/mcp-server-elasticsearch">
-  <img width="380" height="200" src="https://glama.ai/mcp/servers/@elastic/mcp-server-elasticsearch/badge" alt="Elasticsearch Server MCP server" />
-</a>
 
 ## Available Tools
 
 * `list_indices`: List all available Elasticsearch indices
 * `get_mappings`: Get field mappings for a specific Elasticsearch index
-* `search`: Perform an Elasticsearch search with the provided query DSL. Supports highlighting, query profiling, and query explanation.
+* `search`: Perform an Elasticsearch search with the provided query DSL
+* `esql`: Perform an ES|QL query
 * `get_shards`: Get shard information for all or specific indices
 
 ## Prerequisites
 
 * An Elasticsearch instance
 * Elasticsearch authentication credentials (API key or username/password)
-* Docker (or an OCI runtime)
-* MCP Client (e.g. Claude Desktop)
-
-## Demo
-
-<https://github.com/user-attachments/assets/5dd292e1-a728-4ca7-8f01-1380d1bebe0c>
+* An MCP Client (e.g. [Claude Desktop](https://claude.ai/download), [Goose](https://block.github.io/goose/))
 
 ## Installation & Setup
 
-### Using Docker
+This MCP server is provided as a Docker image at `docker.elastic.co/mcp/elasticsearch`
+that supports MCP's stdio, SSE and streamable-HTTP protocols.
 
-1. **Configure MCP Client**
-   * Open your MCP Client. See the [list of MCP Clients](https://modelcontextprotocol.io/clients), here we are configuring Claude Desktop.
-   * Go to **Settings > Developer > MCP Servers**
-   * Click `Edit Config` and add a new MCP Server with the following configuration:
-
-   ```json
-   {
-     "mcpServers": {
-       "elasticsearch-mcp-server": {
-         "command": "docker",
-         "args": [
-           "run", "--rm", "-i",
-           "-e", "ES_URL",
-           "-e", "ES_API_KEY",
-           "docker.elastic.co/mcp/elasticsearch", "stdio"
-         ],
-         "env": {
-           "ES_URL": "<your-elasticsearch-url>",
-           "ES_API_KEY": "<your-api-key>"
-         }
-       }
-     }
-   }
-   ```
-
-2. **Start a Conversation**
-   * Open a new conversation in your MCP Client
-   * The MCP server should connect automatically
-   * You can now ask questions about your Elasticsearch data
-
-
-### Using the Published NPM Package
-
-1. **Configure MCP Client**
-   * Open your MCP Client. See the [list of MCP Clients](https://modelcontextprotocol.io/clients), here we are configuring Claude Desktop.
-   * Go to **Settings > Developer > MCP Servers**
-   * Click `Edit Config` and add a new MCP Server with the following configuration:
-
-   ```json
-   {
-     "mcpServers": {
-       "elasticsearch-mcp-server": {
-         "command": "npx",
-         "args": [
-           "-y",
-           "@elastic/mcp-server-elasticsearch"
-         ],
-         "env": {
-           "ES_URL": "<your-elasticsearch-url>",
-           "ES_API_KEY": "<your-api-key>",
-           "OTEL_LOG_LEVEL": "none"
-         }
-       }
-     }
-   }
-   ```
-
-2. **Start a Conversation**
-   * Open a new conversation in your MCP Client
-   * The MCP server should connect automatically
-   * You can now ask questions about your Elasticsearch data
-
-### Configuration Options
-
-The Elasticsearch MCP Server supports configuration options to connect to your Elasticsearch:
-
-> [!NOTE]
-> You must provide either an API key or both username and password for authentication.
-
-| Environment Variable | Description                                                           | Required |
-|----------------------|-----------------------------------------------------------------------|----------|
-| `ES_URL`             | Your Elasticsearch instance URL                                       | Yes      |
-| `ES_API_KEY`         | Elasticsearch API key for authentication                              | No       |
-| `ES_USERNAME`        | Elasticsearch username for basic authentication                       | No       |
-| `ES_PASSWORD`        | Elasticsearch password for basic authentication                       | No       |
-| `ES_CA_CERT`         | Path to custom CA certificate for Elasticsearch SSL/TLS               | No       |
-| `ES_SSL_SKIP_VERIFY` | Set to '1' or 'true' to skip SSL certificate verification             | No       |
-| `ES_PATH_PREFIX`     | Path prefix for Elasticsearch instance exposed at a non-root path     | No       |
-| `ES_VERSION`         | Server assumes Elasticsearch 9.x. Set to `8` target Elasticsearch 8.x | No       |
-
-### Developing Locally
-
-> [!NOTE]
-> If you want to modify or extend the MCP Server, follow these local development steps.
-
-1. **Use the correct Node.js version**
-
-   ```bash
-   nvm use
-   ```
-
-2. **Install Dependencies**
-
-   ```bash
-   npm install
-   ```
-
-3. **Build the Project**
-
-   ```bash
-   npm run build
-   ```
-
-4. **Run locally in Claude Desktop App**
-   * Open **Claude Desktop App**
-   * Go to **Settings > Developer > MCP Servers**
-   * Click `Edit Config` and add a new MCP Server with the following configuration:
-
-   ```json
-   {
-     "mcpServers": {
-       "elasticsearch-mcp-server-local": {
-         "command": "node",
-         "args": [
-           "/path/to/your/project/dist/index.js"
-         ],
-         "env": {
-           "ES_URL": "your-elasticsearch-url",
-           "ES_API_KEY": "your-api-key",
-           "OTEL_LOG_LEVEL": "none"
-         }
-       }
-     }
-   }
-   ```
-
-5. **Debugging with MCP Inspector**
-
-   ```bash
-   ES_URL=your-elasticsearch-url ES_API_KEY=your-api-key npm run inspector
-   ```
-
-   This will start the MCP Inspector, allowing you to debug and analyze requests. You should see:
-
-   ```bash
-   Starting MCP inspector...
-   Proxy server listening on port 3000
-
-   🔍 MCP Inspector is up and running at http://localhost:5173 🚀
-   ```
-
-## Contributing
-
-We welcome contributions from the community! For details on how to contribute, please see [Contributing Guidelines](/docs/CONTRIBUTING.md).
-
-## Example Questions
-
-> [!TIP]
-> Here are some natural language queries you can try with your MCP Client.
-
-* "What indices do I have in my Elasticsearch cluster?"
-* "Show me the field mappings for the 'products' index."
-* "Find all orders over $500 from last month."
-* "Which products received the most 5-star reviews?"
-
-## How It Works
-
-1. The MCP Client analyzes your request and determines which Elasticsearch operations are needed.
-2. The MCP server carries out these operations (listing indices, fetching mappings, performing searches).
-3. The MCP Client processes the results and presents them in a user-friendly format.
-
-## Security Best Practices
-
-> [!WARNING]
-> Avoid using cluster-admin privileges. Create dedicated API keys with limited scope and apply fine-grained access control at the index level to prevent unauthorized data access.
-
-You can create a dedicated Elasticsearch API key with minimal permissions to control access to your data:
+Running this container without any argument will output a usage message:
 
 ```
-POST /_security/api_key
+docker run docker.elastic.co/mcp/elasticsearch
+```
+
+```
+Usage: elasticsearch-mcp-server <COMMAND>
+
+Commands:
+  stdio  Start a stdio server
+  http   Start a streamable-HTTP server with optional SSE support
+  help   Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help  Print help
+```
+
+### Using the stdio protocol
+
+The MCP server needs environment variables to be set:
+* `ES_URL`, the URL of your Elasticsearch cluster
+* `ES_API_KEY`, the Elasticsearch API key. We **strongly recommend** creating an API key
+   with limited privileges so that the LLM only has access to the data and operations
+   required for the usage context.
+* Optionally, `ES_SSL_SKIP_VERIFY` set to `true` skips SSL/TLS certificate verification when connecting
+  to Elasticsearch. The ability to provide a custom certificate will be added in a later version.
+
+The MCP server is started in stdio mode with this command:
+
+```bash
+docker run -i --rm -e ES_URL -e ES_API_KEY docker.elastic.co/mcp/elasticsearch stdio
+```
+
+The configuration for Claude Desktop is as follows:
+
+```json
 {
-  "name": "es-mcp-server-access",
-  "role_descriptors": {
-    "mcp_server_role": {
-      "cluster": [
-        "monitor"
-      ],
-      "indices": [
-        {
-          "names": [
-            "index-1",
-            "index-2",
-            "index-pattern-*"
-          ],
-          "privileges": [
-            "read",
-            "view_index_metadata"
-          ]
-        }
-      ]
+ "mcpServers": {
+   "elasticsearch-mcp-server": {
+    "command": "docker",
+    "args": [
+    	"run", "-i", "--rm",
+    	"-e", "ES_URL", "-e", "ES_API_KEY",
+    	"docker.elastic.co/mcp/elasticsearch",
+    	"stdio"
+    ],
+    "env": {
+      "ES_URL": "<elasticsearch-cluster-url>",
+      "ES_API_KEY": "<elasticsearch-API-key>"
     }
-  }
+   }
+ }
 }
 ```
 
-## License
+### Using the streamable-HTTP and SSE protocols
 
-This project is licensed under the Apache License 2.0.
+Note: streamable-HTTP is recommended, as [SSE is deprecated](https://modelcontextprotocol.io/docs/concepts/transports#server-sent-events-sse-deprecated).
 
-## Troubleshooting
+The MCP server needs environment variables to be set:
+* `ES_URL`, the URL of your Elasticsearch cluster
+* Optionally, `ES_SSL_SKIP_VERIFY` set to `true` skips SSL/TLS certificate verification when connecting
+  to Elasticsearch. The ability to provide a custom certificate will be added in a later version.
 
-* Ensure your MCP configuration is correct.
-* Verify that your Elasticsearch URL is accessible from your machine.
-* Check that your authentication credentials (API key or username/password) have the necessary permissions.
-* If using SSL/TLS with a custom CA, verify that the certificate path is correct and the file is readable.
-* Look at the terminal output for error messages.
+The MCP client must also be configured with an `Authorization` header containing the Elasticsearch
+cluster's API key
 
-If you encounter issues, feel free to open an issue on the GitHub repository.
+The MCP server is started in http mode with this command:
+
+```bash
+docker run --rm -e ES_URL -p 8080:8080 docker.elastic.co/mcp/elasticsearch http
+```
+
+If for some reason your execution environment doesn't allow passing parameters to the container, they can be passed
+using the `CLI_ARGS` environment variable: `docker run --rm -e ES_URL -e CLI_ARGS=http -p 8080:8080...`
+
+The streamable-HTTP endpoint is at `http:<host>:8080/mcp`. There's also a health check at `http:<host>:8080/ping`
+
+Configuration for Claude Desktop (free edition that only supports the stdio protocol).
+
+1. Install `mcp-proxy` (or an equivalent), that will bridge stdio to streamable-http. The executable 
+   will be installed in `~/.local/bin`:
+
+    ```bash
+    uv tool install mcp-proxy
+    ```
+
+2. Add this configuration to Claude Desktop:
+
+    ```json
+    {
+      "mcpServers": {
+        "elasticsearch-mcp-server": {
+          "command": "/<home-directory>/.local/bin/mcp-proxy",
+          "args": [
+            "--transport=streamablehttp",
+            "--header", "Authorization", "ApiKey <elasticsearch-API-key>",
+            "http://<mcp-server-host>:<mcp-server-port>/mcp"
+          ]
+        }
+      }
+    }
+    ```
+
