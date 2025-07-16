@@ -1,7 +1,7 @@
 # Elasticsearch MCP Server
 
 > [!CAUTION]
-> 
+>
 > **WARNING: this is MCP server is EXPERIMENTAL.**
 
 Connect to your Elasticsearch data directly from any MCP Client using the Model Context Protocol (MCP).
@@ -28,6 +28,12 @@ Versions `8.x` and `9.x` are officially supported. Earlier versions may partiall
 
 ## Installation & Setup
 
+> [!NOTE]
+>
+> Versions 0.3.1 and earlier were installed via `npm`. These versions are deprecated and no longer supported. The following instructions only apply to 0.4.0 and later.
+>
+> To view instructions for versions 0.3.1 and earlier, see the [README for v0.3.1](https://github.com/elastic/mcp-server-elasticsearch/tree/v0.3.1).
+
 This MCP server is provided as a Docker image at `docker.elastic.co/mcp/elasticsearch`
 that supports MCP's stdio, SSE and streamable-HTTP protocols.
 
@@ -52,10 +58,11 @@ Options:
 ### Using the stdio protocol
 
 The MCP server needs environment variables to be set:
-* `ES_URL`, the URL of your Elasticsearch cluster
-* `ES_API_KEY`, the Elasticsearch API key. We **strongly recommend** creating an API key
-   with limited privileges so that the LLM only has access to the data and operations
-   required for the usage context.
+
+* `ES_URL`: the URL of your Elasticsearch cluster
+* For authentication use either an API key or basic authentication:
+  * API key: `ES_API_KEY`
+  * Basic auth: `ES_USERNAME` and `ES_PASSWORD`
 * Optionally, `ES_SSL_SKIP_VERIFY` set to `true` skips SSL/TLS certificate verification when connecting
   to Elasticsearch. The ability to provide a custom certificate will be added in a later version.
 
@@ -73,10 +80,10 @@ The configuration for Claude Desktop is as follows:
    "elasticsearch-mcp-server": {
     "command": "docker",
     "args": [
-    	"run", "-i", "--rm",
-    	"-e", "ES_URL", "-e", "ES_API_KEY",
-    	"docker.elastic.co/mcp/elasticsearch",
-    	"stdio"
+     "run", "-i", "--rm",
+     "-e", "ES_URL", "-e", "ES_API_KEY",
+     "docker.elastic.co/mcp/elasticsearch",
+     "stdio"
     ],
     "env": {
       "ES_URL": "<elasticsearch-cluster-url>",
@@ -92,27 +99,28 @@ The configuration for Claude Desktop is as follows:
 Note: streamable-HTTP is recommended, as [SSE is deprecated](https://modelcontextprotocol.io/docs/concepts/transports#server-sent-events-sse-deprecated).
 
 The MCP server needs environment variables to be set:
+
 * `ES_URL`, the URL of your Elasticsearch cluster
+* For authentication use either an API key or basic authentication:
+  * API key: `ES_API_KEY`
+  * Basic auth: `ES_USERNAME` and `ES_PASSWORD`
 * Optionally, `ES_SSL_SKIP_VERIFY` set to `true` skips SSL/TLS certificate verification when connecting
   to Elasticsearch. The ability to provide a custom certificate will be added in a later version.
-
-The MCP client must also be configured with an `Authorization` header containing the Elasticsearch
-cluster's API key
 
 The MCP server is started in http mode with this command:
 
 ```bash
-docker run --rm -e ES_URL -p 8080:8080 docker.elastic.co/mcp/elasticsearch http
+docker run --rm -e ES_URL -e ES_API_KEY -p 8080:8080 docker.elastic.co/mcp/elasticsearch http
 ```
 
 If for some reason your execution environment doesn't allow passing parameters to the container, they can be passed
-using the `CLI_ARGS` environment variable: `docker run --rm -e ES_URL -e CLI_ARGS=http -p 8080:8080...`
+using the `CLI_ARGS` environment variable: `docker run --rm -e ES_URL -e ES_API_KEY -e CLI_ARGS=http -p 8080:8080...`
 
 The streamable-HTTP endpoint is at `http:<host>:8080/mcp`. There's also a health check at `http:<host>:8080/ping`
 
 Configuration for Claude Desktop (free edition that only supports the stdio protocol).
 
-1. Install `mcp-proxy` (or an equivalent), that will bridge stdio to streamable-http. The executable 
+1. Install `mcp-proxy` (or an equivalent), that will bridge stdio to streamable-http. The executable
    will be installed in `~/.local/bin`:
 
     ```bash
@@ -135,4 +143,3 @@ Configuration for Claude Desktop (free edition that only supports the stdio prot
       }
     }
     ```
-

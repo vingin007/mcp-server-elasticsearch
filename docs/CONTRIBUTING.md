@@ -8,7 +8,6 @@ Elasticsearch MCP Server is open source, and we love to receive contributions fr
 
 There are many ways to contribute, from writing tutorials or blog posts, improving the documentation, submitting bug reports and feature requests or writing code.
 
-
 Contributions are [released](https://help.github.com/articles/github-terms-of-service/#6-contributions-under-repository-license) under the [project's license](../LICENSE).
 
 Please note that this project follows the [Elastic's Open Source Community Code of Conduct][code-of-conduct].
@@ -34,13 +33,14 @@ You can use either:
 
 1. **Elastic Cloud** - Use an existing Elasticsearch deployment and your API key
 2. **Local Elasticsearch** - Run Elasticsearch locally using the [start-local](https://www.elastic.co/guide/en/elasticsearch/reference/current/run-elasticsearch-locally.html) script:
+
    ```bash
    curl -fsSL https://elastic.co/start-local | sh
    ```
 
    This starts Elasticsearch and Kibana with Docker:
-   - Elasticsearch: http://localhost:9200
-   - Kibana: http://localhost:5601
+   - Elasticsearch: <http://localhost:9200>
+   - Kibana: <http://localhost:5601>
 
 > [!NOTE]
 > The `start-local` setup is for development only. It uses basic authentication and disables HTTPS.
