@@ -148,6 +148,7 @@ impl EsBaseTools {
     /// The additional 'fields' parameter helps some LLMs that don't know about the `_source`
     /// request property to narrow down the data returned and reduce their context size
     #[tool(
+        name = "es_search",
         description = "Perform an Elasticsearch search with the provided query DSL.",
         annotations(title = "Elasticsearch search DSL query", read_only_hint = true)
     )]
